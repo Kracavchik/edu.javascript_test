@@ -4,6 +4,7 @@ const FORMATTER = new Intl.NumberFormat("ru-RU",
         minimumFractionDigits: 2
     }).format;
 
+
 let invoices = {
     "customer": "MDT",
     "performance": [
@@ -26,17 +27,21 @@ let invoices = {
 }
 
 function statement(invoice) {
+    /** Accept .json file with list of plays,
+     *  calculate price for costumer and return
+     *  to HTML page
+     */
     let totalAmount = 0;
-    let comedyBonus = 0;
+    let comedyBonusCounter = 0;
     let bonusAmount = 0;
     let result_tag = document.getElementById('result')
-    let result = `Счет для ${invoice.customer}\n`;
+    let result;
 
     for (let perf of invoice.performance) {
-        let play = perf.type;
+        let play_type = perf.type;
         let thisAmount = 0;
         let volumeCredits = 0;
-        switch (play) {
+        switch (play_type) {
             case "tragedy":
                 thisAmount = 40000;
                 if (perf.audience > 30) {
@@ -51,23 +56,26 @@ function statement(invoice) {
                 }
                 thisAmount += 300 * perf.audience;
                 totalAmount += thisAmount;
-                comedyBonus++
+                comedyBonusCounter++
                 break;
             default:
-                throw new Error(`неизвестный тип: ${play}`);
+                throw new Error(`неизвестный тип: ${play_type}`);
         }
-        // Добавление бонусов
+        // Add bonuses
         volumeCredits += Math.max(perf.audience - 30, 0);
         bonusAmount += volumeCredits;
 
-        // Дополнительный бонус за каждые 10 комедий
-        if (play === "comedy" && comedyBonus === 10) {
+        // Additional bonuses for even 10 comedy's
+        if (play_type === "comedy" && comedyBonusCounter === 10) {
             volumeCredits += Math.floor(perf.audience / 5);
-            comedyBonus = 0;
+            comedyBonusCounter = 0;
         }
-        play = (play === 'tragedy') ? 'Трагедия' : 'Комедия';
-        // Вывод строки счета
-        result = `${play}: ${FORMATTER(thisAmount)}<br>
+        // change variable name to more readable format
+        play_type = (play_type === 'tragedy') ? 'Трагедия' : 'Комедия';
+
+        // return result to HTML page
+        result = `Счёт для ${invoice.customer}<br>
+            ${play_type}: ${FORMATTER(thisAmount)}<br>
             Количество мест - ${perf.audience}<br>
             Итого с вас - ${FORMATTER(totalAmount)}<br>
             Вы заработали - ${volumeCredits} бонусов <br>
